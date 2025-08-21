@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import { 
     getAuth, 
     signInWithPopup, 
@@ -23,8 +23,15 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const auth = getAuth(app);
+
+if (typeof window !== "undefined") {
+  isSupported().then((supported) => {
+    if (supported) {
+      getAnalytics(app);
+    }
+  });
+}
 
 /**
  * Initiates a Google sign-in flow using a popup window.
@@ -38,7 +45,7 @@ export function signInWithGoogle() {
  * Signs the current user out of the Firebase authentication session.
  * @returns A promise that resolves when the sign-out is complete.
  */
-export function signOut() {
+export function signOutUser() {
     return auth.signOut();
 }
 
