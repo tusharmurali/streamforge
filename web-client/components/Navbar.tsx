@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -6,6 +6,7 @@ import AuthButtons from "./AuthButtons";
 import { onAuthStateChangedListener } from "../lib/firebase";
 import { useState, useEffect } from "react";
 import { User } from "firebase/auth";
+import VideoUpload from "./VideoUpload";
 
 export default function Navbar() {
     // State to store the current user data
@@ -30,6 +31,7 @@ export default function Navbar() {
                     width={206}
                 />
             </Link>
+            { user && <VideoUpload /> }
             <AuthButtons user={user} />
         </nav>
     )

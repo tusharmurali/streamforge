@@ -7,6 +7,8 @@ import {
     downloadRawVideoFromBucket, 
     uploadProcessedVideoToBucket 
 } from './storage';
+import path from 'path';
+import { isNewVideo, setVideo } from './firestore';
 
 createDirectories();
 
@@ -54,6 +56,29 @@ app.post('/process-video', async (req, res) => {
         return;
     }
     
+    const videoId = path.parse(rawVideoFileName).name
+    let isNew;
+    try {
+        isNew = await isNewVideo(videoId);
+    } catch (error) {
+        const msg = 'Error checking video status in Firestore';
+        console.error(`error: ${msg}`, error);
+        res.status(500).send(`Internal Server Error: ${msg}`);
+        return;
+    }
+
+    if (!isNew) {
+        const msg = `Video with ID "${videoId}" has already been processed or is processing`;
+        console.warn(`conflict: ${msg}`);
+        res.status(409).send(`Conflict: ${msg}`);
+        return;
+    }
+    await setVideo(videoId, {
+        id: videoId,
+        uid: videoId.split('_')[0],
+        status: 'processing'
+    });
+
     const processedVideoFileName = `processed-${rawVideoFileName}`;
     try {
         await downloadRawVideoFromBucket(rawVideoFileName);
@@ -71,6 +96,10 @@ app.post('/process-video', async (req, res) => {
         ]);
     }
 
+    await setVideo(videoId, {
+        fileName: processedVideoFileName,
+        status: 'processed'
+    });
     res.status(200).send('Video processed successfully');
 });
 

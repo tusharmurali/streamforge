@@ -5,8 +5,8 @@ import {getFirestore} from "firebase-admin/firestore";
 import {Storage} from "@google-cloud/storage";
 import {onCall, HttpsError} from "firebase-functions/https";
 
-initializeApp();
-const firestore = getFirestore();
+const app = initializeApp();
+const firestore = getFirestore(app);
 const storage = new Storage();
 const rawVideoBucketName = "streamforge-raw-videos";
 
@@ -25,11 +25,18 @@ export const generateUploadURL = onCall({
   maxInstances: 1,
 }, async (request) => {
   if (!request.auth) {
-    throw new HttpsError("failed-precondition", "The function must be " +
-      "called while authenticated.");
+    throw new HttpsError(
+      "failed-precondition",
+      "The function must be called while authenticated."
+    );
   }
 
-  const fileName = `${request.auth.uid}_${Date.now()}`;
+  const ext = request.data?.ext;
+  if (!ext) {
+    throw new HttpsError("invalid-argument", "Missing file extension.");
+  }
+
+  const fileName = `${request.auth.uid}_${Date.now()}${ext}`;
 
   const [url] = await storage
     .bucket(rawVideoBucketName)
@@ -38,7 +45,6 @@ export const generateUploadURL = onCall({
       version: "v4",
       action: "write",
       expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-      contentType: "video/*",
     });
 
   return {url, fileName};
