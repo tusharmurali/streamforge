@@ -6,7 +6,7 @@ export const revalidate = 60;
 
 export default async function Home() {
   const videos = await getVideos();
-  console.log(videos);
+
   return (
     <main className="flex flex-row gap-[32px] row-start-2 items-center sm:items-start">
       {

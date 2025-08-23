@@ -1,10 +1,6 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
-
-export default function Watch() {
+export default async function Watch({ searchParams }: { searchParams: Promise<{ v?: string }> }) {
     const videoPrefix = "https://storage.googleapis.com/streamforge-processed-videos/";
-    const videoFileName = useSearchParams().get("v");
+    const { v: videoFileName } = await searchParams;
 
     return (
         <div>
