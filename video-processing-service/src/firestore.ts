@@ -4,8 +4,8 @@ import { getFirestore } from "firebase-admin/firestore"
 initializeApp();
 const firestore = getFirestore();
 const videoCollectionName = "videos";
-export type VideoStatus = "processing" | "processed";
-export interface Video {
+type VideoStatus = "processing" | "processed";
+interface Video {
     id?: string;
     uid?: string;
     fileName?: string;

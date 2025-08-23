@@ -9,6 +9,8 @@ const app = initializeApp();
 const firestore = getFirestore(app);
 const storage = new Storage();
 const rawVideoBucketName = "streamforge-raw-videos";
+const userCollectionId = "users";
+const videoCollectionId = "videos";
 
 export const onUserCreated = functions
   .region("australia-southeast1")
@@ -16,7 +18,7 @@ export const onUserCreated = functions
   .onCreate((user) => {
     const {displayName, email, photoURL, uid} = user;
     const userInfo = {displayName, email, photoURL, uid};
-    firestore.collection("users").doc(uid).set(userInfo);
+    firestore.collection(userCollectionId).doc(uid).set(userInfo);
     logger.info(`New user created: ${user.uid}, email: ${user.email}`);
   });
 
@@ -48,4 +50,15 @@ export const generateUploadURL = onCall({
     });
 
   return {url, fileName};
+});
+
+export const getVideos = onCall({
+  region: "australia-southeast1",
+  maxInstances: 1,
+}, async () => {
+  const snapshot = await firestore
+    .collection(videoCollectionId)
+    .limit(10)
+    .get();
+  return snapshot.docs.map((docs) => docs.data());
 });

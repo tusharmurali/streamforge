@@ -13,12 +13,8 @@ COPY . .
 # Build the app
 RUN npm run build
 
-
 # Stage 2: Production stage
 FROM node:lts
-
-# Install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg
 
 WORKDIR /app
 
@@ -26,11 +22,12 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --only=production
 
-# Copy built app from builder stage
-COPY --from=builder /app/dist ./dist
+# Copy built files from the builder stage
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
 
 # Expose the port
 EXPOSE 3000
 
 # Run the app
-CMD ["npm", "run", "serve"]
+CMD ["npm", "start"]
